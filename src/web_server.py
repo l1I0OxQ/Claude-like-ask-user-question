@@ -31,11 +31,6 @@ class ChatCompletionRequest(BaseModel):
     chat_id: Optional[str] = None
 
 
-class ResumeRequest(BaseModel):
-    session_id: str
-    value: str
-
-
 class Model(BaseModel):
     id: str
     object: str = "model"
@@ -81,13 +76,6 @@ class SessionStore:
                 stream_manager.discard_callback(evicted_id)
 
             return entry
-
-    def get_session(self, session_id: str) -> Optional[SessionEntry]:
-        with self._lock:
-            if session_id in self._store:
-                self._store.move_to_end(session_id)
-                return self._store[session_id]
-            return None
 
 
 _sessions = SessionStore()
@@ -212,24 +200,6 @@ async def chat_completions(request: ChatCompletionRequest):
         }
 
     return _build_streaming_response(session_id, entry, cmd_or_inputs)
-
-
-@app.post("/v1/interrupt/resume")
-async def interrupt_resume(request: ResumeRequest):
-    entry = _sessions.get_session(request.session_id)
-    agent = entry.get_agent()
-    if not has_pending_interrupt(agent, request.session_id):
-        raise HTTPException(
-            status_code=400,
-            detail="No pending interrupt for this session.",
-        )
-
-    return _build_streaming_response(
-        request.session_id,
-        entry,
-        Command(resume=request.value),
-    )
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
