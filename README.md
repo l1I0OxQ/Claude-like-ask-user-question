@@ -12,11 +12,11 @@ AI 在对话中随机出拳，然后弹出选项卡片让你选择：
 AI: 我已出拳：石头，请出拳！
 
 ┌─────────────────────────────┐
-│ 我已出拳：石头，请出拳！      │
+│ 我已出拳：石头，请出拳！        │
 │                             │
-│ [石头] [剪刀] [布]           │
+│ [石头] [剪刀] [布]            │
 │                             │
-│ 或输入其他选项，按 Enter 提交 │
+│ 或输入其他选项，按 Enter 提交   │
 └─────────────────────────────┘
 ```
 
@@ -36,11 +36,11 @@ cp .env.example .env
 python src/web_server.py
 ```
 
-后端启动后监听 `http://localhost:8888`，提供 OpenAI 兼容 API。可以直接用任何支持自定义 API 的客户端连接。
+后端启动后监听 `http://localhost:8888`，提供 OpenAI 兼容 API。前端 JS 增强组件针对 OpenWebUI 的 DOM 结构定制。
 
 ## 接入 OpenWebUI
 
-如果你想在 OpenWebUI 中使用，需要通过 nginx 注入前端脚本。
+本项目基于 OpenWebUI 设计，前端交互卡片依赖通过 nginx 注入定制 JS 脚本实现。
 
 ### 部署步骤
 
@@ -67,9 +67,6 @@ sudo docker run -d \
   -v "$(pwd)/frontend/ask_question.js:/usr/share/nginx/html/ask_question.js:ro" \
   --restart always \
   nginx:alpine
-
-# 4. 启动后端
-python src/web_server.py
 ```
 
 ### 配置 OpenWebUI
@@ -104,11 +101,13 @@ sudo docker start openwebui-nginx
 
 ## API
 
-| 端点 | 说明 |
-|---|---|
-| `GET /health` | 健康检查 |
-| `GET /v1/models` | 模型列表 |
+
+| 端点                          | 说明                  |
+| --------------------------- | ------------------- |
+| `GET /health`               | 健康检查                |
+| `GET /v1/models`            | 模型列表                |
 | `POST /v1/chat/completions` | 对话（SSE 流式），支持中断自动恢复 |
+
 
 ## 项目结构
 
@@ -123,3 +122,4 @@ src/
 frontend/ask_question.js        # OpenWebUI 前端卡片组件
 nginx/nginx.conf                # JS 注入 + 反向代理
 ```
+
